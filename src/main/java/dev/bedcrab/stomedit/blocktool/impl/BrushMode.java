@@ -16,6 +16,12 @@ public class BrushMode implements BlockToolMode {
     }
 
     @Override
+    public Block onLeftClick(Block block, Point pos, Player player) {
+        player.sendMessage(SEColorUtil.SPECIAL.text("not implemented!"));
+        return block;
+    }
+
+    @Override
     public @Nullable ItemStack validateItem(Player player) {
         return null;
     }

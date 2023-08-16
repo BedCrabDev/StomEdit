@@ -7,10 +7,7 @@ import net.minestom.server.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 public interface BlockToolMode {
-    Block onUse(Block block, Point pos, Player player);
-    default Block onLeftClick(Block block, Point pos, Player player) {
-        return block;
-    }
-
     @Nullable ItemStack validateItem(Player player);
+    Block onUse(Block block, Point pos, Player player);
+    Block onLeftClick(Block block, Point pos, Player player);
 }

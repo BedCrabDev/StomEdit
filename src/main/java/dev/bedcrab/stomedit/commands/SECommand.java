@@ -17,14 +17,14 @@ public abstract class SECommand extends Command {
     private final BlockTool.Mode bltoolMode;
     public SECommand(@NotNull String name, String syntax, @Nullable BlockTool.Mode bltoolMode)  {
         super("/"+name);
-        this.syntax = "// " +  name + " " + syntax;
+        this.syntax = "//" +  name + " " + syntax;
         this.bltoolMode = bltoolMode;
         setDefaultExecutor((s, c) -> SECommandManager.invalidCommand(s, c , this.syntax));
     }
 
     public void SE_addSyntax(@NotNull SECommandExecutor executor, @NotNull Argument<?>... args) {
         super.addSyntax((sender, ctx) -> {
-            if (!(sender instanceof Player player) || bltoolMode == null || !BlockTool.isBLToolItem(player.getItemInMainHand())) return;
+            if (!(sender instanceof Player player) || bltoolMode == null || BlockTool.notBLToolItem(player.getItemInMainHand())) return;
             ItemStack item = bltoolMode.validateItem(player);
             if (item != null) executor.accept(player, ctx, item);
         }, args);

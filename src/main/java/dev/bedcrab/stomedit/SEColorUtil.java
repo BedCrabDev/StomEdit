@@ -72,12 +72,6 @@ public enum SEColorUtil {
        return Component.translatable(key, args).color(asTextColor(false));
    }
 
-   public @NotNull Component from(Component comp) {
-        ComponentLike[] children = new ComponentLike[comp.children().size()];
-        for (int i = 0; i < comp.children().size(); i++) children[i] = comp.children().get(i).color(asTextColor(true));
-        return comp.children(Arrays.stream(children).toList()).color(asTextColor(false));
-   }
-
    public @NotNull Component format(String text, ComponentLike... args) {
        for (int i = 0; i < args.length; i++) args[i] = args[i].asComponent().color(asTextColor(true));
        Component result = Component.text(text).color(asTextColor(false));

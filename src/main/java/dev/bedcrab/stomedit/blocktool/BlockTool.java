@@ -1,5 +1,6 @@
 package dev.bedcrab.stomedit.blocktool;
 
+import dev.bedcrab.stomedit.SEUtils;
 import dev.bedcrab.stomedit.blocktool.impl.BrushMode;
 import dev.bedcrab.stomedit.blocktool.impl.ModifyMode;
 import dev.bedcrab.stomedit.blocktool.impl.SelectMode;
@@ -28,8 +29,8 @@ public final class BlockTool {
         .displayName(SEColorUtil.SPECIAL.text("Block tool"))
         .build().withTag(Tag.String("mode"), BlockTool.Mode.MODIFY.name());
 
-    public static boolean isBLToolItem(ItemStack item) {
-        return item.hasTag(Tag.String("mode"));
+    public static boolean notBLToolItem(ItemStack item) {
+        return !item.hasTag(Tag.String("mode"));
     }
 
     private final EventNode<Event> parentNode;
@@ -43,7 +44,14 @@ public final class BlockTool {
 
     @SuppressWarnings("NonExtendableApiUsage")
     public static class SEEventHandler implements EventHandler<PlayerEvent> {
-        private final EventNode<PlayerEvent> node = EventNode.event("blocktool_event", EventFilter.PLAYER, e -> isBLToolItem(e.getPlayer().getItemInMainHand()));
+        private final EventNode<PlayerEvent> node = EventNode.event("blocktool_event", EventFilter.PLAYER, e -> {
+            if (notBLToolItem(e.getPlayer().getItemInMainHand())) return false;
+            if (!e.getPlayer().isCreative()) {
+                SEUtils.message(e.getPlayer(), SEColorUtil.FAIL.text("Use creative mode"));
+                return false;
+            }
+            return true;
+        });
         public SEEventHandler() {
             node.addListener(PlayerUseItemOnBlockEvent.class, this::onUse);
             node.addListener(PlayerBlockBreakEvent.class, this::onLeftClick);
@@ -78,9 +86,13 @@ public final class BlockTool {
         SELECT(new SelectMode()),
         ;
 
-        private final BlockToolMode modeHandler;
+        private BlockToolMode modeHandler;
         Mode(BlockToolMode modeHandler) {
-            this.modeHandler = modeHandler;
+            overrideHandler(modeHandler);
+        }
+
+        public void overrideHandler(BlockToolMode newMode) {
+            this.modeHandler = newMode;
         }
 
         @Override

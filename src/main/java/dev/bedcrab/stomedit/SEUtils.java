@@ -9,6 +9,7 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
+@SuppressWarnings("UnstableApiUsage")
 public class SEUtils {
     public static void message(CommandSender sender, Component text) {
         sender.sendMessage(SEColorUtil.SPECIAL.text("[StomEdit]").appendSpace().append(text));
