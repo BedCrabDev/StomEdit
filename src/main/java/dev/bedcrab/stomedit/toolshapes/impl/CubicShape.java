@@ -39,20 +39,20 @@ public class CubicShape implements ToolShapeMode {
     @Override
     public void onRightClick(Player player, Pos pos, MutableNBTCompound nbt) {
         Tag.Structure("to", Pos.class).write(nbt, pos);
-        SEUtils.message(player, SEColorUtil.GENERIC.format("%% target set to %%", "TO", pos.toString()));
+        SEUtils.message(player, SEColorUtil.GENERIC.format("%% target set to %%", Component.text("TO"), SEUtils.pointToComp(pos)));
     }
 
     @Override
     public void onLeftClick(Player player, Pos pos, MutableNBTCompound nbt) {
         Tag.Structure("from", Pos.class).write(nbt, pos);
-        SEUtils.message(player, SEColorUtil.GENERIC.format("%% target set to %%", "FROM", pos.toString()));
+        SEUtils.message(player, SEColorUtil.GENERIC.format("%% target set to %%", Component.text("FROM"), SEUtils.pointToComp(pos)));
     }
 
     public static class ShapeIterator implements ToolShapeIterator {
         private final int minX, maxX, minY, maxY, minZ, maxZ;
         private Pos lastPos;
         private boolean last = false;
-        public int count = 0;
+        private int count = 0;
         public ShapeIterator(Pos from, Pos to) {
             minX = Math.min(to.blockX(), from.blockX()); maxX = Math.max(to.blockX(), from.blockX());
             minY = Math.min(to.blockY(), from.blockY()); maxY = Math.max(to.blockY(), from.blockY());

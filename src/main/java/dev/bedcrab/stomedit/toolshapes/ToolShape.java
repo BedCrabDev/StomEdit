@@ -1,7 +1,9 @@
 package dev.bedcrab.stomedit.toolshapes;
 
+import dev.bedcrab.stomedit.SEColorUtil;
 import dev.bedcrab.stomedit.SEUtils;
 import dev.bedcrab.stomedit.toolshapes.impl.CubicShape;
+import dev.bedcrab.stomedit.toolshapes.impl.DiskShape;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
@@ -27,6 +29,7 @@ public class ToolShape {
             if (type == null) return null;
             ToolShape.Mode mode = ToolShape.Mode.valueOf(type);
             for (Tag<?> tag : mode.getRequiredTags()) if (!reader.hasTag(tag)) {
+                SEUtils.message(player, SEColorUtil.FAIL.format("Could not resolve (%%) shape:", mode.name()));
                 SEUtils.message(player, mode.getHelpMessage());
                 return null;
             }
@@ -38,6 +41,7 @@ public class ToolShape {
     }
     public enum Mode implements ToolShapeMode {
         CUBIC(new CubicShape()),
+        DISK(new DiskShape())
         ;
 
         private ToolShapeMode modeHandler;

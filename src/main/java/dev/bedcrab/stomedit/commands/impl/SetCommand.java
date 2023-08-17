@@ -28,7 +28,11 @@ public class SetCommand extends SECommand {
         if (shapeMode == null) return;
         ToolShapeIterator iter = shapeMode.iter(TagHandler.fromCompound((NBTCompound) item.getTag(Tag.NBT("shape"))));
         Block block = context.get(blockArg);
-        iter.fill(player.getInstance(), () -> block);
-        SEUtils.message(player, SEColorUtil.GENERIC.format("Filled %% with %%", iter.count()+(iter.count() > 0 ? " blocks" : " block"), block.name()));
+        try {
+            iter.fill(player.getInstance(), () -> block);
+        } catch (Exception e) {
+            SEUtils.exceptionMessage(e, player, "Error whilst filling selection!");
+        }
+        SEUtils.message(player, SEColorUtil.GENERIC.format("Filled %% with %%", iter.count()+(iter.count() != 0 ? " blocks" : " block"), block.name()));
     }
 }

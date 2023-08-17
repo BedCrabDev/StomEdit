@@ -21,16 +21,20 @@ public class SelectMode implements BlockToolMode {
     public Block onUse(Block block, Point pos, Player player) {
         final ItemStack item = player.getItemInMainHand();
         NBTCompound shapeNBT = (NBTCompound) item.getTag(Tag.NBT("shape"));
-        if (shapeNBT == null) shapeNBT = NBT.Compound(newNBT -> {
-            ToolShape.Mode defaultMode = ToolShape.Mode.CUBIC;
-            newNBT.set("type", NBT.String(defaultMode.name()));
-            defaultMode.onRightClick(player, new Pos(pos), newNBT);
-        });
-        else {
-            MutableNBTCompound newNBT = shapeNBT.toMutableCompound();
-            ToolShape.Mode mode = ToolShape.Mode.valueOf(newNBT.getString("type"));
-            mode.onRightClick(player, new Pos(pos), newNBT);
-            shapeNBT = newNBT.toCompound();
+        try {
+            if (shapeNBT == null) shapeNBT = NBT.Compound(newNBT -> {
+                ToolShape.Mode defaultMode = ToolShape.Mode.CUBIC;
+                newNBT.set("type", NBT.String(defaultMode.name()));
+                defaultMode.onRightClick(player, new Pos(pos), newNBT);
+            });
+            else {
+                MutableNBTCompound newNBT = shapeNBT.toMutableCompound();
+                ToolShape.Mode mode = ToolShape.Mode.valueOf(newNBT.getString("type"));
+                mode.onRightClick(player, new Pos(pos), newNBT);
+                shapeNBT = newNBT.toCompound();
+            }
+        } catch (Exception e) {
+            SEUtils.exceptionMessage(e, player, "An error occurred whilst handling toolshape nbt, report the error!");
         }
         player.getInventory().setItemStack(player.getHeldSlot(), item.withTag(Tag.NBT("shape"), shapeNBT));
         return block;
@@ -40,16 +44,20 @@ public class SelectMode implements BlockToolMode {
     public Block onLeftClick(Block block, Point pos, Player player) {
         final ItemStack item = player.getItemInMainHand();
         NBTCompound shapeNBT = (NBTCompound) item.getTag(Tag.NBT("shape"));
-        if (shapeNBT == null) shapeNBT = NBT.Compound(newNBT -> {
-            ToolShape.Mode defaultMode = ToolShape.Mode.CUBIC;
-            newNBT.set("type", NBT.String(defaultMode.name()));
-            defaultMode.onLeftClick(player, new Pos(pos), newNBT);
-        });
-        else {
-            MutableNBTCompound newNBT = shapeNBT.toMutableCompound();
-            ToolShape.Mode mode = ToolShape.Mode.valueOf(newNBT.getString("type"));
-            mode.onLeftClick(player, new Pos(pos), newNBT);
-            shapeNBT = newNBT.toCompound();
+        try {
+            if (shapeNBT == null) shapeNBT = NBT.Compound(newNBT -> {
+                ToolShape.Mode defaultMode = ToolShape.Mode.CUBIC;
+                newNBT.set("type", NBT.String(defaultMode.name()));
+                defaultMode.onLeftClick(player, new Pos(pos), newNBT);
+            });
+            else {
+                MutableNBTCompound newNBT = shapeNBT.toMutableCompound();
+                ToolShape.Mode mode = ToolShape.Mode.valueOf(newNBT.getString("type"));
+                mode.onLeftClick(player, new Pos(pos), newNBT);
+                shapeNBT = newNBT.toCompound();
+            }
+        } catch (Exception e) {
+            SEUtils.exceptionMessage(e, player, "An error occurred whilst handling toolshape nbt, report the error!");
         }
         player.getInventory().setItemStack(player.getHeldSlot(), item.withTag(Tag.NBT("shape"), shapeNBT));
         return block;

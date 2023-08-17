@@ -2,7 +2,6 @@ package dev.bedcrab.stomedit.commands.impl;
 
 import dev.bedcrab.stomedit.SEColorUtil;
 import dev.bedcrab.stomedit.SEUtils;
-import dev.bedcrab.stomedit.blocktool.BlockTool;
 import dev.bedcrab.stomedit.commands.SECommand;
 import dev.bedcrab.stomedit.toolshapes.ToolShape;
 import net.minestom.server.command.builder.CommandContext;
@@ -17,7 +16,7 @@ import org.jglrxavpok.hephaistos.nbt.NBTCompound;
 public class ToolShapeCommand extends SECommand {
     private final ArgumentEnum<ToolShape.Mode> shapeArg = ArgumentType.Enum("shape", ToolShape.Mode.class);
     public ToolShapeCommand() {
-        super("toolshape", "<shape>", BlockTool.Mode.SELECT);
+        super("toolshape", "<shape>", null);
         SE_addSyntax(this::call, shapeArg);
     }
 
