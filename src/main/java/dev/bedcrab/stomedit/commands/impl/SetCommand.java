@@ -19,8 +19,8 @@ import org.jglrxavpok.hephaistos.nbt.NBTCompound;
 public class SetCommand extends SECommand {
     private final ArgumentBlockState blockArg = ArgumentType.BlockState("block");
     public SetCommand() {
-        super("set", "<block>", BlockTool.Mode.SELECT);
-        SE_addSyntax(this::call, blockArg);
+        super("set");
+        new Syntax(BlockTool.Mode.SELECT, this::call, blockArg);
     }
 
     private void call(Player player, CommandContext context, ItemStack item) {

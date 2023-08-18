@@ -26,7 +26,11 @@ public class DiskShape implements ToolShapeMode {
 
     @Override
     public ToolShapeIterator iter(TagReadable tags) {
-        return new ShapeIterator(tags.getTag(Tag.Structure("origin", Pos.class)), tags.getTag(Tag.Integer("radius")), tags.getTag(Tag.Boolean("vertical")));
+        return new ShapeIterator(
+            tags.getTag(Tag.Structure("origin", Pos.class)),
+            tags.getTag(Tag.Integer("radius")),
+            tags.getTag(Tag.Boolean("vertical"))
+        );
     }
 
     @Override
@@ -42,9 +46,8 @@ public class DiskShape implements ToolShapeMode {
         }
         Pos origin = Objects.requireNonNull(Tag.Structure("origin", Pos.class).read(nbt));
         int radius = (int) origin.distance(pos);
-        double yDiff = Math.max(origin.y(), pos.y()) - Math.min(origin.y(), pos.y());
+        boolean vertical = origin.blockX() == pos.blockX() && origin.blockZ() == pos.blockZ() && Math.max(origin.blockY(), pos.blockY()) - Math.min(origin.blockY(), pos.blockY()) > 1;
         Tag.Integer("radius").write(nbt, radius);
-        boolean vertical = radius < yDiff && yDiff > 2;
         Tag.Boolean("vertical").write(nbt, vertical);
         SEUtils.message(player, SEColorUtil.GENERIC.format("%% target set to %% (%%)", "RADIUS", radius + (radius != 0 ? " blocks" : " block"), vertical ? "vertically" : "horizontally"));
     }
@@ -98,6 +101,9 @@ public class DiskShape implements ToolShapeMode {
 
                     zz = (vertical ? py : pz) + z;
                     z_z = (vertical ? py : pz) - z;
+                    // x -> south or north
+                    // z -> east or west
+                    //TODO: add "face" tag
                     list.add(new Pos(xx, vertical ? zz : py, vertical ? pz : zz));
                     list.add(new Pos(x_x, vertical ? zz : py, vertical ? pz : zz));
                     list.add(new Pos(xx, vertical ? z_z : py, vertical ? pz : z_z));

@@ -16,8 +16,8 @@ import org.jglrxavpok.hephaistos.nbt.NBTCompound;
 public class ToolShapeCommand extends SECommand {
     private final ArgumentEnum<ToolShape.Mode> shapeArg = ArgumentType.Enum("shape", ToolShape.Mode.class);
     public ToolShapeCommand() {
-        super("toolshape", "<shape>", null);
-        SE_addSyntax(this::call, shapeArg);
+        super("toolshape");
+        new Syntax(null, this::call, shapeArg);
     }
 
     private void call(Player player, CommandContext context, ItemStack item) {

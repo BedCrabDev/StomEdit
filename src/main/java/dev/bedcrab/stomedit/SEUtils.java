@@ -1,7 +1,10 @@
 package dev.bedcrab.stomedit;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.minestom.server.command.CommandSender;
+import net.minestom.server.command.builder.CommandSyntax;
+import net.minestom.server.command.builder.arguments.Argument;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.instance.block.Block;
 
@@ -32,5 +35,14 @@ public class SEUtils {
     }
     public static Component pointToComp(Point point) {
         return SEColorUtil.GENERIC.format("%%, %%, %%", String.valueOf(point.x()), String.valueOf(point.y()), String.valueOf(point.z()));
+    }
+    public static Component commandToComp(String name, CommandSyntax syntax) {
+        TextComponent.Builder text = Component.text();
+        text.append(SEColorUtil.GENERIC.text("/"+name));
+        for (Argument<?> arg : syntax.getArguments()) {
+            text.appendSpace();
+            text.append(SEColorUtil.GENERIC.format(arg.isOptional() ? "[%%]" : "<%%>", arg.getId()));
+        }
+        return text.build();
     }
 }
