@@ -1,75 +1,52 @@
 package dev.bedcrab.stomedit.blocktool.impl;
 
 import dev.bedcrab.stomedit.SEUtils;
+import dev.bedcrab.stomedit.StomEditException;
 import dev.bedcrab.stomedit.blocktool.BlockTool;
 import dev.bedcrab.stomedit.blocktool.BlockToolMode;
 import dev.bedcrab.stomedit.SEColorUtil;
-import dev.bedcrab.stomedit.toolshapes.ToolShape;
+import dev.bedcrab.stomedit.session.PlayerSession;
+import dev.bedcrab.stomedit.session.impl.BLToolSessionData;
+import dev.bedcrab.stomedit.session.impl.ToolShapeSessionData;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
 import net.minestom.server.instance.block.Block;
-import net.minestom.server.item.ItemStack;
-import net.minestom.server.tag.Tag;
-import org.jetbrains.annotations.Nullable;
-import org.jglrxavpok.hephaistos.nbt.NBT;
-import org.jglrxavpok.hephaistos.nbt.NBTCompound;
-import org.jglrxavpok.hephaistos.nbt.mutable.MutableNBTCompound;
 
 public class SelectMode implements BlockToolMode {
     @Override
-    public Block onUse(Block block, Point pos, Player player) {
-        final ItemStack item = player.getItemInMainHand();
-        NBTCompound shapeNBT = (NBTCompound) item.getTag(Tag.NBT("shape"));
+    public void onUse(Block block, Point pos, Player player, PlayerSession session) throws StomEditException {
+        ToolShapeSessionData toolshapeData = session.read(ToolShapeSessionData.class, ToolShapeSessionData.DEFAULT);
         try {
-            if (shapeNBT == null) shapeNBT = NBT.Compound(newNBT -> {
-                ToolShape.Mode defaultMode = ToolShape.Mode.CUBIC;
-                newNBT.set("type", NBT.String(defaultMode.name()));
-                defaultMode.onRightClick(player, new Pos(pos), newNBT);
-            });
-            else {
-                MutableNBTCompound newNBT = shapeNBT.toMutableCompound();
-                ToolShape.Mode mode = ToolShape.Mode.valueOf(newNBT.getString("type"));
-                mode.onRightClick(player, new Pos(pos), newNBT);
-                shapeNBT = newNBT.toCompound();
-            }
+            toolshapeData.parseMode().onRightClick(player, new Pos(pos), session);
         } catch (Exception e) {
-            SEUtils.exceptionMessage(e, player, "An error occurred whilst handling toolshape nbt, report the error!");
+            throw new StomEditException(player, "An error occurred whilst handling toolshape nbt!", e);
         }
-        player.getInventory().setItemStack(player.getHeldSlot(), item.withTag(Tag.NBT("shape"), shapeNBT));
-        return block;
     }
 
     @Override
-    public Block onLeftClick(Block block, Point pos, Player player) {
-        final ItemStack item = player.getItemInMainHand();
-        NBTCompound shapeNBT = (NBTCompound) item.getTag(Tag.NBT("shape"));
+    public void onLeftClick(Block block, Point pos, Player player, PlayerSession session) throws StomEditException {
+        ToolShapeSessionData toolshapeData = session.read(ToolShapeSessionData.class, ToolShapeSessionData.DEFAULT);
         try {
-            if (shapeNBT == null) shapeNBT = NBT.Compound(newNBT -> {
-                ToolShape.Mode defaultMode = ToolShape.Mode.CUBIC;
-                newNBT.set("type", NBT.String(defaultMode.name()));
-                defaultMode.onLeftClick(player, new Pos(pos), newNBT);
-            });
-            else {
-                MutableNBTCompound newNBT = shapeNBT.toMutableCompound();
-                ToolShape.Mode mode = ToolShape.Mode.valueOf(newNBT.getString("type"));
-                mode.onLeftClick(player, new Pos(pos), newNBT);
-                shapeNBT = newNBT.toCompound();
-            }
+            toolshapeData.parseMode().onLeftClick(player, new Pos(pos), session);
         } catch (Exception e) {
-            SEUtils.exceptionMessage(e, player, "An error occurred whilst handling toolshape nbt, report the error!");
+            throw new StomEditException(player, "An error occurred whilst handling toolshape nbt!", e);
         }
-        player.getInventory().setItemStack(player.getHeldSlot(), item.withTag(Tag.NBT("shape"), shapeNBT));
-        return block;
     }
 
-    public @Nullable ItemStack validateItem(Player player) {
-        final ItemStack item = player.getItemInMainHand();
-        if (!item.getTag(Tag.String("mode")).equalsIgnoreCase(BlockTool.Mode.SELECT.name())) {
+    public PlayerSession validate(Player player) {
+        PlayerSession session = PlayerSession.of(player);
+        BLToolSessionData bltoolData = session.read(BLToolSessionData.class, BLToolSessionData.DEFAULT);
+        if (bltoolData.num() != BlockTool.Mode.SELECT.ordinal()) {
             SEUtils.message(player, SEColorUtil.FAIL.format("Use %% mode!", BlockTool.Mode.SELECT.name()));
             return null;
         }
-        if (!item.hasTag(Tag.Structure("shape", new ToolShape.ShapeTagSerializer(player)))) return null;
-        return item;
+        ToolShapeSessionData toolshapeData = session.read(ToolShapeSessionData.class, ToolShapeSessionData.DEFAULT);
+        try {
+            toolshapeData.validateParams();
+        } catch (Exception e) {
+            throw new StomEditException(player, "Shape data is invalid!", e, toolshapeData.parseMode().getHintMsg());
+        }
+        return session;
     }
 }

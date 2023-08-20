@@ -2,9 +2,12 @@ package dev.bedcrab.stomedit.toolshapes.impl;
 
 import dev.bedcrab.stomedit.SEColorUtil;
 import dev.bedcrab.stomedit.SEUtils;
+import dev.bedcrab.stomedit.session.PlayerSession;
+import dev.bedcrab.stomedit.session.impl.ToolShapeSessionData;
 import dev.bedcrab.stomedit.toolshapes.ToolShapeIterator;
 import dev.bedcrab.stomedit.toolshapes.ToolShapeMode;
 import net.kyori.adventure.text.Component;
+import net.minestom.server.command.builder.arguments.Argument;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
 import net.minestom.server.tag.Tag;
@@ -12,39 +15,49 @@ import net.minestom.server.tag.TagReadable;
 import org.jetbrains.annotations.Nullable;
 import org.jglrxavpok.hephaistos.nbt.mutable.MutableNBTCompound;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 @SuppressWarnings("UnstableApiUsage")
 public class CubicShape implements ToolShapeMode {
+    @Override
+    public Collection<Argument<?>> modifiableParameters() {
+        return List.of();
+    }
 
     @Override
-    public Collection<Tag<?>> getRequiredTags() {
-        return Arrays.asList(
-            Tag.Structure("from", Pos.class),
-            Tag.Structure("to", Pos.class)
+    public Collection<Tag<?>> getRequiredParams() {
+        return List.of();
+    }
+
+    @Override
+    public ToolShapeIterator iter(TagReadable params) {
+        return new ShapeIterator(
+            params.getTag(Tag.Structure("from", Pos.class)),
+            params.getTag(Tag.Structure("to", Pos.class))
         );
     }
 
     @Override
-    public ToolShapeIterator iter(TagReadable tags) {
-        return new ShapeIterator(tags.getTag(Tag.Structure("from", Pos.class)), tags.getTag(Tag.Structure("to", Pos.class)));
-    }
-
-    @Override
-    public Component getHelpMessage() {
+    public Component getHintMsg() {
         return SEColorUtil.FAIL.format("Set %% and %% to specify a selection!", "FROM (lclick)", "TO (rclick)");
     }
 
     @Override
-    public void onRightClick(Player player, Pos pos, MutableNBTCompound nbt) {
+    public void onRightClick(Player player, Pos pos, PlayerSession session) {
+        ToolShapeSessionData data = session.read(ToolShapeSessionData.class, ToolShapeSessionData.DEFAULT);
+        MutableNBTCompound nbt = data.params().toMutableCompound();
         Tag.Structure("to", Pos.class).write(nbt, pos);
+        session.write(data.withParams(nbt));
         SEUtils.message(player, SEColorUtil.GENERIC.format("%% target set to %%", Component.text("TO"), SEUtils.pointToComp(pos)));
     }
 
     @Override
-    public void onLeftClick(Player player, Pos pos, MutableNBTCompound nbt) {
+    public void onLeftClick(Player player, Pos pos, PlayerSession session) {
+        ToolShapeSessionData data = session.read(ToolShapeSessionData.class, ToolShapeSessionData.DEFAULT);
+        MutableNBTCompound nbt = data.params().toMutableCompound();
         Tag.Structure("from", Pos.class).write(nbt, pos);
+        session.write(data.withParams(nbt));
         SEUtils.message(player, SEColorUtil.GENERIC.format("%% target set to %%", Component.text("FROM"), SEUtils.pointToComp(pos)));
     }
 

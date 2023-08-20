@@ -8,6 +8,7 @@ import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.player.PlayerLoginEvent;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.InstanceManager;
+import net.minestom.server.instance.LightingChunk;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.world.DimensionType;
 
@@ -18,6 +19,7 @@ public class Main {
         InstanceManager instanceManager = MinecraftServer.getInstanceManager();
         InstanceContainer container = instanceManager.createInstanceContainer(DimensionType.OVERWORLD);
         container.setGenerator(unit -> unit.modifier().fillHeight(0, 40, Block.STONE));
+        container.setChunkSupplier(LightingChunk::new);
         GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();
         CommandManager commandManager = MinecraftServer.getCommandManager();
         se = new StomEdit(globalEventHandler, commandManager);

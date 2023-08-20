@@ -2,9 +2,13 @@ package dev.bedcrab.stomedit.toolshapes.impl;
 
 import dev.bedcrab.stomedit.SEColorUtil;
 import dev.bedcrab.stomedit.SEUtils;
+import dev.bedcrab.stomedit.session.PlayerSession;
+import dev.bedcrab.stomedit.session.impl.ToolShapeSessionData;
 import dev.bedcrab.stomedit.toolshapes.ToolShapeIterator;
 import dev.bedcrab.stomedit.toolshapes.ToolShapeMode;
 import net.kyori.adventure.text.Component;
+import net.minestom.server.command.builder.arguments.Argument;
+import net.minestom.server.command.builder.arguments.ArgumentType;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
 import net.minestom.server.tag.Tag;
@@ -13,11 +17,20 @@ import org.jglrxavpok.hephaistos.nbt.mutable.MutableNBTCompound;
 
 import java.util.*;
 
+
 @SuppressWarnings("UnstableApiUsage")
 public class DiskShape implements ToolShapeMode {
     @Override
-    public Collection<Tag<?>> getRequiredTags() {
-        return Arrays.asList(
+    public Collection<Argument<?>> modifiableParameters() {
+        return List.of(
+            ArgumentType.Integer("radius"),
+            ArgumentType.Boolean("vertical")
+        );
+    }
+
+    @Override
+    public Collection<Tag<?>> getRequiredParams() {
+        return List.of(
             Tag.Structure("origin", Pos.class),
             Tag.Integer("radius"),
             Tag.Boolean("vertical")
@@ -25,21 +38,24 @@ public class DiskShape implements ToolShapeMode {
     }
 
     @Override
-    public ToolShapeIterator iter(TagReadable tags) {
+    public ToolShapeIterator iter(TagReadable params) {
         return new ShapeIterator(
-            tags.getTag(Tag.Structure("origin", Pos.class)),
-            tags.getTag(Tag.Integer("radius")),
-            tags.getTag(Tag.Boolean("vertical"))
+            params.getTag(Tag.Structure("origin", Pos.class)),
+            params.getTag(Tag.Integer("radius")),
+            params.getTag(Tag.Boolean("vertical"))
         );
     }
 
     @Override
-    public Component getHelpMessage() {
+    public Component getHintMsg() {
         return SEColorUtil.FAIL.format("Set %% and %% to specify a selection!", "ORIGIN (lclick)", "RADIUS (rclick)");
     }
 
     @Override
-    public void onRightClick(Player player, Pos pos, MutableNBTCompound nbt) {
+    public void onRightClick(Player player, Pos pos, PlayerSession session) {
+        ToolShapeSessionData data = session.read(ToolShapeSessionData.class, ToolShapeSessionData.DEFAULT);
+        MutableNBTCompound nbt = data.params().toMutableCompound();
+
         if (!nbt.contains("origin")) {
             SEUtils.message(player, SEColorUtil.FAIL.format("Set %% first, or use //toolshape DISK <radius> to set the radius!", "ORIGIN (lclick)"));
             return;
@@ -49,12 +65,17 @@ public class DiskShape implements ToolShapeMode {
         boolean vertical = origin.blockX() == pos.blockX() && origin.blockZ() == pos.blockZ() && Math.max(origin.blockY(), pos.blockY()) - Math.min(origin.blockY(), pos.blockY()) > 1;
         Tag.Integer("radius").write(nbt, radius);
         Tag.Boolean("vertical").write(nbt, vertical);
+
+        session.write(data.withParams(nbt));
         SEUtils.message(player, SEColorUtil.GENERIC.format("%% target set to %% (%%)", "RADIUS", radius + (radius != 0 ? " blocks" : " block"), vertical ? "vertically" : "horizontally"));
     }
 
     @Override
-    public void onLeftClick(Player player, Pos pos, MutableNBTCompound nbt) {
+    public void onLeftClick(Player player, Pos pos, PlayerSession session) {
+        ToolShapeSessionData data = session.read(ToolShapeSessionData.class, ToolShapeSessionData.DEFAULT);
+        MutableNBTCompound nbt = data.params().toMutableCompound();
         Tag.Structure("origin", Pos.class).write(nbt, pos);
+        session.write(data.withParams(nbt));
         SEUtils.message(player, SEColorUtil.GENERIC.format("%% target set to %%", Component.text("ORIGIN"), SEUtils.pointToComp(pos)));
     }
 

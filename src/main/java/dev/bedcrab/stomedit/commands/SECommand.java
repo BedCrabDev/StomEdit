@@ -2,24 +2,22 @@ package dev.bedcrab.stomedit.commands;
 
 import dev.bedcrab.stomedit.SEColorUtil;
 import dev.bedcrab.stomedit.SEUtils;
+import dev.bedcrab.stomedit.StomEditException;
 import dev.bedcrab.stomedit.blocktool.BlockTool;
-import dev.bedcrab.stomedit.commands.impl.BlocktoolCommand;
-import dev.bedcrab.stomedit.commands.impl.SetCommand;
-import dev.bedcrab.stomedit.commands.impl.ToolShapeCommand;
+import dev.bedcrab.stomedit.commands.impl.*;
+import dev.bedcrab.stomedit.session.PlayerSession;
 import net.minestom.server.command.CommandManager;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.CommandContext;
 import net.minestom.server.command.builder.CommandSyntax;
 import net.minestom.server.command.builder.arguments.Argument;
 import net.minestom.server.entity.Player;
-import net.minestom.server.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.function.BiConsumer;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class SECommand extends Command {
 
-    public SECommand(@NotNull String name)  {
+    public SECommand(@NotNull String name) {
         super("/"+name);
         setDefaultExecutor((sender, context) -> {
             SEUtils.message(sender, SEColorUtil.FAIL.format("Invalid syntax for /%%. Valid syntax:", context.getCommandName()));
@@ -28,41 +26,28 @@ public abstract class SECommand extends Command {
     }
 
     public class Syntax {
-        private final Executor executor;
-        private final Argument<?>[] args;
-        private final BlockTool.Mode bltoolMode;
-        private boolean ignoreBLTool = false;
-        public Syntax(BlockTool.Mode bltoolMode, Executor executor, @NotNull Argument<?>... args) {
-            this.executor = executor;
-            this.args = args;
-            this.bltoolMode = bltoolMode;
-            add();
-        }
-        public Syntax(BlockTool.Mode bltoolMode, BiConsumer<Player, CommandContext> executor, @NotNull Argument<?>... args) {
-            this.executor = (player, context, item) -> executor.accept(player, context);
-            this.args = args;
-            this.bltoolMode = bltoolMode;
-            this.ignoreBLTool = true;
-            add();
-        }
-        private void add() {
+        public Syntax(@Nullable BlockTool.Mode bltoolMode, Executor executor, @NotNull Argument<?>... args) {
+            boolean ignoreBLTool = bltoolMode == null;
             addSyntax((sender, ctx) -> {
                 if (!(sender instanceof Player player)) return;
-                if (ignoreBLTool) executor.accept(player, ctx, null);
-                else {
-                    if (BlockTool.notBLToolItem(player.getItemInMainHand())) return;
-                    if (bltoolMode == null) executor.accept(player, ctx, player.getItemInMainHand());
+                try {
+                    if (ignoreBLTool) executor.accept(player, ctx, PlayerSession.of(player));
                     else {
-                        ItemStack item = bltoolMode.validateItem(player);
-                        if (item != null) executor.accept(player, ctx, item);
+                        if (BlockTool.notBLToolItem(player.getItemInMainHand())) SEUtils.message(player, SEColorUtil.FAIL.text("You're not holding your block tool!"));
+                        else {
+                            PlayerSession session = bltoolMode.validate(player);
+                            if (session != null) executor.accept(player, ctx, session);
+                        }
                     }
+                } catch (Exception e) {
+                    new StomEditException(player, "An error occurred whilst executing your command!", e).sendMessage();
                 }
             }, args);
         }
     }
 
     public interface Executor {
-        void accept(Player player, CommandContext context, ItemStack item);
+        void accept(Player player, CommandContext context, PlayerSession session) throws Exception;
     }
 
     public static class Manager {
@@ -72,7 +57,9 @@ public abstract class SECommand extends Command {
         }
 
         public void enable() {
+            manager.register(new DebugCommand());
             manager.register(new BlocktoolCommand());
+            manager.register(new BLToolModeCommand());
             manager.register(new ToolShapeCommand());
             manager.register(new SetCommand());
         }

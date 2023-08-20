@@ -10,6 +10,7 @@ public enum SEColorUtil {
 
     GENERIC(0xF2F2F2, 0xAAAAAA, true),
     FAIL(0xCF2D21, 0xDE493E, true),
+    WARNING(0xF59342, 0xF5E642),
     SPECIAL(0xEE38FF, 0xFF2121),
     ;
 

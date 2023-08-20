@@ -1,10 +1,13 @@
 package dev.bedcrab.stomedit.blocktool;
 
 import dev.bedcrab.stomedit.SEUtils;
+import dev.bedcrab.stomedit.StomEditException;
 import dev.bedcrab.stomedit.blocktool.impl.BrushMode;
 import dev.bedcrab.stomedit.blocktool.impl.ModifyMode;
 import dev.bedcrab.stomedit.blocktool.impl.SelectMode;
 import dev.bedcrab.stomedit.SEColorUtil;
+import dev.bedcrab.stomedit.session.PlayerSession;
+import dev.bedcrab.stomedit.session.impl.BLToolSessionData;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.Event;
@@ -19,7 +22,6 @@ import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.tag.Tag;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -27,10 +29,11 @@ import java.util.Objects;
 public final class BlockTool {
     public static final ItemStack ITEM = ItemStack.builder(Objects.requireNonNull(Material.fromNamespaceId("minecraft:debug_stick")))
         .displayName(SEColorUtil.SPECIAL.text("Block tool"))
-        .build().withTag(Tag.String("mode"), BlockTool.Mode.MODIFY.name());
+        .set(Tag.Boolean("isBltool"), true)
+        .build();
 
     public static boolean notBLToolItem(ItemStack item) {
-        return !item.hasTag(Tag.String("mode"));
+        return !item.hasTag(Tag.Boolean("isBltool")) || !item.getTag(Tag.Boolean("isBltool"));
     }
 
     private final EventNode<Event> parentNode;
@@ -60,18 +63,28 @@ public final class BlockTool {
             Point targetPos = event.getPlayer().getTargetBlockPosition(5);
             if (targetPos == null) return;
             Block targetBlock = event.getInstance().getBlock(targetPos);
-            BlockTool.Mode mode = BlockTool.Mode.valueOf(event.getPlayer().getItemInMainHand().getTag(Tag.String("mode")));
-            Block updatedBlock = mode.onUse(targetBlock, targetPos, event.getPlayer());
-            event.getInstance().setBlock(targetPos, updatedBlock);
+            try {
+                PlayerSession session = PlayerSession.of(event.getPlayer());
+                BlockTool.Mode mode = session.read(BLToolSessionData.class, BLToolSessionData.DEFAULT).parseMode();
+                mode.onUse(targetBlock, targetPos, event.getPlayer(), session);
+            } catch (Exception e) {
+                if (e instanceof StomEditException se) se.sendMessage();
+                else new StomEditException(event.getPlayer(), "Error occurred whilst handling event!", e).sendMessage();
+            }
         }
         private void onLeftClick(PlayerBlockBreakEvent event) {
             event.setCancelled(true);
-            BlockTool.Mode mode = BlockTool.Mode.valueOf(event.getPlayer().getItemInMainHand().getTag(Tag.String("mode")));
             Point targetPos = event.getPlayer().getTargetBlockPosition(5);
             if (targetPos == null) return;
             Block targetBlock = event.getInstance().getBlock(targetPos);
-            Block updatedBlock = mode.onLeftClick(targetBlock, targetPos, event.getPlayer());
-            event.getInstance().setBlock(targetPos, updatedBlock);
+            try {
+                PlayerSession session = PlayerSession.of(event.getPlayer());
+                BlockTool.Mode mode = session.read(BLToolSessionData.class, BLToolSessionData.DEFAULT).parseMode();
+                mode.onLeftClick(targetBlock, targetPos, event.getPlayer(), session);
+            } catch (Exception e) {
+                if (e instanceof StomEditException se) se.sendMessage();
+                else new StomEditException(event.getPlayer(), "Error occurred whilst handling event!", e).sendMessage();
+            }
         }
         @Override
         public @NotNull EventNode<PlayerEvent> eventNode() {
@@ -96,18 +109,18 @@ public final class BlockTool {
         }
 
         @Override
-        public Block onUse(Block block, Point pos, Player player) {
-            return modeHandler.onUse(block, pos, player);
+        public void onUse(Block block, Point pos, Player player, PlayerSession session) {
+            modeHandler.onUse(block, pos, player, session);
         }
 
         @Override
-        public Block onLeftClick(Block block, Point pos, Player player) {
-            return modeHandler.onLeftClick(block, pos, player);
+        public void onLeftClick(Block block, Point pos, Player player, PlayerSession session) {
+            modeHandler.onLeftClick(block, pos, player, session);
         }
 
         @Override
-        public @Nullable ItemStack validateItem(Player player) {
-            return modeHandler.validateItem(player);
+        public PlayerSession validate(Player player) {
+            return modeHandler.validate(player);
         }
     }
 }
