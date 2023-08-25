@@ -2,9 +2,27 @@
 
 StomEdit is a FAWE-like implementation of WorldEdit inside of Minestom.
 
-**Warning! ⚠ This project has only been tested with `minestom-ce`. It may not work well with base Minestom.**
-
 ## Setup
+
+Add the project as a dependency:
+
+```gradle
+// for the examples below, relace TAG with a tag from
+// https://jitpack.io/#BedCrabDev/StomEdit
+// or, use -SNAPSHOT for the latest builds
+
+// Minestom
+implementation("com.github.BedCrabDev:StomEdit:TAG") {
+  exclude(group = "dev.hollowcube", module = "minestom-ce")
+}
+
+// minestom-ce
+implementation("com.github.BedCrabDev:StomEdit:TAG")
+```
+
+(make sure you have also added `jitpack.io` as a repo)
+
+Then, insert the code above after `MinestomServer.init();` and before starting the server:
 
 ```java
 EventNode<Event> parentEventNode = ...; // you can use the global event node here if you want
@@ -18,7 +36,7 @@ stomEdit.bltoolEnable();
 stomEdit.commandsEnable();
 ```
 
-StomEdit is not available as an extension. Insert the code above after `MinestomServer.init();` and before starting the server.
+StomEdit is not available as an extension.
 
 ## Commands
 
