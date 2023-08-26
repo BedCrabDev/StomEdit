@@ -12,7 +12,7 @@ import net.minestom.server.command.builder.arguments.ArgumentType;
 import net.minestom.server.entity.Player;
 
 public class BLToolModeCommand extends SECommand {
-    private final ArgumentEnum<BlockTool.Mode> modeArg = ArgumentType.Enum("mode", BlockTool.Mode.class);
+    private final ArgumentEnum<BlockTool.Mode> modeArg = ArgumentType.Enum("mode", BlockTool.Mode.class).setFormat(ArgumentEnum.Format.LOWER_CASED);
     public BLToolModeCommand() {
         super("bltoolmode");
         new Syntax(null, this::call, modeArg);

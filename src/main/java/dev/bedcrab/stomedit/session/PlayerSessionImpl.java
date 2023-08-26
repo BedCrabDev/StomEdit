@@ -1,7 +1,6 @@
 package dev.bedcrab.stomedit.session;
 
 import dev.bedcrab.stomedit.StomEdit;
-import dev.bedcrab.stomedit.StomEditException;
 import net.minestom.server.entity.Player;
 import net.minestom.server.tag.Tag;
 import org.jetbrains.annotations.NotNull;
@@ -29,7 +28,7 @@ public class PlayerSessionImpl implements PlayerSession {
     public <T extends Record & SessionData> @NotNull T read(Class<T> record, T emptyDefault) throws NullPointerException {
         NBTCompound nbt = nbt();
         String name = record.getSimpleName().toLowerCase();
-        if (!nbt.containsKey(name)) throw new StomEditException(player, "Session data `"+name+"` couldn't be found!", new NullPointerException());
+        if (!nbt.containsKey(name)) return emptyDefault;
         T result = Tag.Structure(name, record).read(nbt());
         if (result == null) return emptyDefault;
         return result;
@@ -37,9 +36,14 @@ public class PlayerSessionImpl implements PlayerSession {
 
     @Override
     public <T extends Record & SessionData> void write(T value) {
-        MutableNBTCompound newNBT = nbt().toMutableCompound();
+        player.sendMessage(value.toString());
         //noinspection unchecked
-        Tag.Structure(value.getClass().getSimpleName().toLowerCase(), (Class<T>) value.getClass()).write(newNBT, value);
-        player.setTag(StomEdit.NBT_DATA_HOME, newNBT.toCompound());
+        Class<T> record = (Class<T>) value.getClass();
+        String name = record.getSimpleName().toLowerCase();
+        MutableNBTCompound newNBT = NBTCompound.EMPTY.toMutableCompound();
+        MutableNBTCompound playerNBT = nbt().toMutableCompound();
+        Tag.View(record).write(newNBT, value);
+        playerNBT.set(name, newNBT.toCompound());
+        player.setTag(StomEdit.NBT_DATA_HOME, playerNBT.toCompound());
     }
 }

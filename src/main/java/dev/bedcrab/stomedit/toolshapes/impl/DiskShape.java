@@ -48,7 +48,7 @@ public class DiskShape implements ToolShapeMode {
 
     @Override
     public Component getHintMsg() {
-        return SEColorUtil.FAIL.format("Set %% and %% to specify a selection!", "ORIGIN (lclick)", "RADIUS (rclick)");
+        return SEColorUtil.HINT.format("Set %% and %% to specify a selection!", "ORIGIN (lclick)", "RADIUS (rclick)");
     }
 
     @Override

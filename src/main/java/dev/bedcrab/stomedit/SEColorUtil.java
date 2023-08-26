@@ -8,9 +8,9 @@ import java.util.Arrays;
 
 public enum SEColorUtil {
 
-    GENERIC(0xF2F2F2, 0xAAAAAA, true),
-    FAIL(0xCF2D21, 0xDE493E, true),
-    WARNING(0xF59342, 0xF5E642),
+    GENERIC(0xF2F2F2, 0xD4D4D4, true),
+    FAIL(0xFF5555, 0xFF0000, true),
+    HINT(0xFFFFAA, 0xFFFF55),
     SPECIAL(0xEE38FF, 0xFF2121),
     ;
 

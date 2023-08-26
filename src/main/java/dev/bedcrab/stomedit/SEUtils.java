@@ -5,11 +5,7 @@ import net.kyori.adventure.text.TextComponent;
 import net.minestom.server.command.CommandSender;
 import net.minestom.server.command.builder.CommandContext;
 import net.minestom.server.command.builder.CommandSyntax;
-import net.minestom.server.command.builder.arguments.Argument;
-import net.minestom.server.command.builder.arguments.ArgumentBoolean;
-import net.minestom.server.command.builder.arguments.ArgumentLiteral;
-import net.minestom.server.command.builder.arguments.ArgumentString;
-import net.minestom.server.command.builder.arguments.number.ArgumentInteger;
+import net.minestom.server.command.builder.arguments.*;
 import net.minestom.server.coordinate.Point;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.tag.Tag;
@@ -40,37 +36,47 @@ public class SEUtils {
         return blockProperties;
     }
     public static Component pointToComp(Point point) {
-        return SEColorUtil.GENERIC.format("%%, %%, %%", String.valueOf(point.x()), String.valueOf(point.y()), String.valueOf(point.z()));
+        return SEColorUtil.GENERIC.text("["+point.blockX() +", "+point.blockY() +", "+point.blockZ()+"]");
     }
     public static Component commandToComp(String name, CommandSyntax syntax) {
         TextComponent.Builder text = Component.text();
-        text.append(SEColorUtil.GENERIC.text("/"+name));
+        text.append(SEColorUtil.GENERIC.text(name));
         for (Argument<?> arg : syntax.getArguments()) {
+            if (arg instanceof ArgumentGroup group) {
+                text.appendSpace();
+                if (arg.isOptional()) text.append(SEColorUtil.GENERIC.text("["));
+                for (int i = 0; i < group.group().size(); i++) {
+                    Argument<?> gArg = group.group().get(i);
+                    if (gArg instanceof ArgumentLiteral) text.append(SEColorUtil.GENERIC.text(gArg.getId()));
+                    else text.append(SEColorUtil.GENERIC.format(gArg.isOptional() ? "[%%]" : "<%%>", gArg.getId()));
+                    if (i != group.group().size()-1) text.appendSpace();
+                }
+                if (arg.isOptional()) text.append(SEColorUtil.GENERIC.text("]"));
+                continue;
+            }
             text.appendSpace();
-            text.append(SEColorUtil.GENERIC.format(arg instanceof ArgumentLiteral ? "%%" : arg.isOptional() ? "[%%]" : "<%%>", arg.getId()));
+            if (arg instanceof ArgumentLiteral) text.append(SEColorUtil.GENERIC.text(arg.getId()));
+            else text.append(SEColorUtil.GENERIC.format(arg.isOptional() ? "[%%]" : "<%%>", arg.getId()));
         }
         return text.build();
     }
 
     //TODO: use this for modifiable parameters
-    public static class ArgumentToTagSerializer implements TagSerializer<Argument<?>> {
-        private final CommandContext context;
-        public ArgumentToTagSerializer(CommandContext context) {
-            this.context = context;
-        }
-
+    public static class ArgumentsToTagSerializer implements TagSerializer<CommandContext> {
         @Nullable
         @Override
-        public Argument<?> read(@NotNull TagReadable reader) {
+        public CommandContext read(@NotNull TagReadable reader) {
             return null;
         }
 
         @Override
-        public void write(@NotNull TagWritable writer, @NotNull Argument<?> value) {
-            Object val = context.get(value);
-            if (value instanceof ArgumentString) writer.setTag(Tag.String(value.getId()), (String) val);
-            else if (value instanceof ArgumentInteger) writer.setTag(Tag.Integer(value.getId()), (int) val);
-            else if (value instanceof ArgumentBoolean) writer.setTag(Tag.Boolean(value.getId()), (boolean) val);
+        public void write(@NotNull TagWritable writer, @NotNull CommandContext ctx) {
+            for (Map.Entry<String, Object> entry : ctx.getMap().entrySet()) {
+                String id = entry.getKey(); Object val = entry.getValue();
+                if (val instanceof String) writer.setTag(Tag.String(id), (String) val);
+                else if (val instanceof Integer) writer.setTag(Tag.Integer(id), (int) val);
+                else if (val instanceof Boolean) writer.setTag(Tag.Boolean(id), (boolean) val);
+            }
         }
     }
 }

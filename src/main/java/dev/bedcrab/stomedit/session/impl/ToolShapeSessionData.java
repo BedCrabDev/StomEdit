@@ -24,7 +24,7 @@ public record ToolShapeSessionData(int num, NBTCompound params) implements Sessi
         ToolShape.Mode mode = parseMode();
         for (Tag<?> tag : mode.getRequiredParams()) if (tag.read(params) == null) throw new NullPointerException("Parameter `"+tag.getKey()+"` not found!");
     }
-    public @NotNull ToolShapeIterator iter() throws NullPointerException {
+    public @NotNull ToolShapeIterator parseIter() throws NullPointerException {
         ToolShape.Mode mode = parseMode();
         validateParams();
         return mode.iter(TagHandler.fromCompound(params));

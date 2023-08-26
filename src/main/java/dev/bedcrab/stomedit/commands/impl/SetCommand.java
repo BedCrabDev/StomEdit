@@ -23,11 +23,9 @@ public class SetCommand extends SECommand {
 
     private void call(Player player, CommandContext context, PlayerSession session) throws StomEditException {
         ToolShapeSessionData toolshapeData = session.read(ToolShapeSessionData.class, ToolShapeSessionData.DEFAULT);
-        ToolShapeIterator iter = toolshapeData.iter();
+        ToolShapeIterator iter = toolshapeData.parseIter();
         Block block = context.get(blockArg);
-        try {
-            iter.fill(player.getInstance(), () -> block);
-        } catch (Exception e) {
+        try { iter.fill(player.getInstance(), () -> block); } catch (Exception e) {
             throw new StomEditException(player, "Error whilst filling selection!", e);
         }
         SEUtils.message(player, SEColorUtil.GENERIC.format("Filled %% with %%", iter.count()+(iter.count() != 0 ? " blocks" : " block"), block.name()));

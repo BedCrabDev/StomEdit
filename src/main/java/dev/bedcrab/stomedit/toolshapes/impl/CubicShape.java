@@ -27,7 +27,10 @@ public class CubicShape implements ToolShapeMode {
 
     @Override
     public Collection<Tag<?>> getRequiredParams() {
-        return List.of();
+        return List.of(
+            Tag.Structure("from", Pos.class),
+            Tag.Structure("to", Pos.class)
+        );
     }
 
     @Override
@@ -40,7 +43,7 @@ public class CubicShape implements ToolShapeMode {
 
     @Override
     public Component getHintMsg() {
-        return SEColorUtil.FAIL.format("Set %% and %% to specify a selection!", "FROM (lclick)", "TO (rclick)");
+        return SEColorUtil.HINT.format("Set %% and %% to specify a selection!", "FROM (lclick)", "TO (rclick)");
     }
 
     @Override
@@ -63,6 +66,7 @@ public class CubicShape implements ToolShapeMode {
 
     public static class ShapeIterator implements ToolShapeIterator {
         private final int minX, maxX, minY, maxY, minZ, maxZ;
+        public final Pos minPos, maxPos;
         private Pos lastPos;
         private boolean last = false;
         private int count = 0;
@@ -70,7 +74,9 @@ public class CubicShape implements ToolShapeMode {
             minX = Math.min(to.blockX(), from.blockX()); maxX = Math.max(to.blockX(), from.blockX());
             minY = Math.min(to.blockY(), from.blockY()); maxY = Math.max(to.blockY(), from.blockY());
             minZ = Math.min(to.blockZ(), from.blockZ()); maxZ = Math.max(to.blockZ(), from.blockZ());
-            lastPos = new Pos(minX, minY, minZ);
+            minPos = new Pos(minX, minY, minZ);
+            maxPos = new Pos(maxX, maxY, maxZ);
+            lastPos = minPos;
         }
 
         @Override
