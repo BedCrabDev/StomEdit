@@ -14,6 +14,8 @@ import net.minestom.server.tag.TagSerializer;
 import net.minestom.server.tag.TagWritable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jglrxavpok.hephaistos.nbt.NBT;
+import org.jglrxavpok.hephaistos.nbt.NBTCompound;
 
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -59,6 +61,10 @@ public class SEUtils {
             else text.append(SEColorUtil.GENERIC.format(arg.isOptional() ? "[%%]" : "<%%>", arg.getId()));
         }
         return text.build();
+    }
+
+    public static NBTCompound emptyCompound() {
+        return NBT.Compound(b -> b.set("_", NBT.Byte(Byte.MAX_VALUE)));
     }
 
     //TODO: use this for modifiable parameters

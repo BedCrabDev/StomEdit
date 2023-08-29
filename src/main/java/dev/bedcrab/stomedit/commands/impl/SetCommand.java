@@ -6,7 +6,7 @@ import dev.bedcrab.stomedit.blocktool.BlockTool;
 import dev.bedcrab.stomedit.commands.SECommand;
 import dev.bedcrab.stomedit.SEColorUtil;
 import dev.bedcrab.stomedit.session.PlayerSession;
-import dev.bedcrab.stomedit.session.impl.ToolShapeSessionData;
+import dev.bedcrab.stomedit.session.impl.ToolShapeData;
 import dev.bedcrab.stomedit.toolshapes.ToolShapeIterator;
 import net.minestom.server.command.builder.CommandContext;
 import net.minestom.server.command.builder.arguments.ArgumentType;
@@ -22,7 +22,7 @@ public class SetCommand extends SECommand {
     }
 
     private void call(Player player, CommandContext context, PlayerSession session) throws StomEditException {
-        ToolShapeSessionData toolshapeData = session.read(ToolShapeSessionData.class, ToolShapeSessionData.DEFAULT);
+        ToolShapeData toolshapeData = session.read(ToolShapeData.class, ToolShapeData::defaultFunc);
         ToolShapeIterator iter = toolshapeData.parseIter();
         Block block = context.get(blockArg);
         try { iter.fill(player.getInstance(), () -> block); } catch (Exception e) {

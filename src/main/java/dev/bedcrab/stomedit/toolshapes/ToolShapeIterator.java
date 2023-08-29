@@ -14,7 +14,7 @@ public interface ToolShapeIterator extends Iterable<Pos>, Iterator<Pos> {
     default Iterator<Pos> iterator() {
         return this;
     }
-    default void fill(Block.Setter setter, Supplier<Block> supplier) {
+    default void fill(Block.@NotNull Setter setter, @NotNull Supplier<Block> supplier) {
         for (Pos pos : this) setter.setBlock(pos, supplier.get());
     }
 }

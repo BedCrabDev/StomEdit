@@ -8,14 +8,15 @@ import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.tag.TagReadable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 
 public interface ToolShapeMode {
-    Collection<Argument<?>> modifiableParameters();
+    Collection<Argument<?>> shapeVariables();
     Collection<Tag<?>> getRequiredParams();
     ToolShapeIterator iter(TagReadable params);
     Component getHintMsg();
-    void onRightClick(Player player, Pos pos, PlayerSession session) throws StomEditException;
-    void onLeftClick(Player player, Pos pos, PlayerSession session) throws StomEditException;
+    void onRightClick(@NotNull Player player, Pos pos, @NotNull PlayerSession session) throws StomEditException;
+    void onLeftClick(@NotNull Player player, Pos pos, @NotNull PlayerSession session) throws StomEditException;
 }

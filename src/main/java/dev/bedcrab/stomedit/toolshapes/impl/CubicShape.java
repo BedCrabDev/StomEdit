@@ -3,7 +3,7 @@ package dev.bedcrab.stomedit.toolshapes.impl;
 import dev.bedcrab.stomedit.SEColorUtil;
 import dev.bedcrab.stomedit.SEUtils;
 import dev.bedcrab.stomedit.session.PlayerSession;
-import dev.bedcrab.stomedit.session.impl.ToolShapeSessionData;
+import dev.bedcrab.stomedit.session.impl.ToolShapeData;
 import dev.bedcrab.stomedit.toolshapes.ToolShapeIterator;
 import dev.bedcrab.stomedit.toolshapes.ToolShapeMode;
 import net.kyori.adventure.text.Component;
@@ -12,6 +12,7 @@ import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.tag.TagReadable;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jglrxavpok.hephaistos.nbt.mutable.MutableNBTCompound;
 
@@ -21,7 +22,7 @@ import java.util.List;
 @SuppressWarnings("UnstableApiUsage")
 public class CubicShape implements ToolShapeMode {
     @Override
-    public Collection<Argument<?>> modifiableParameters() {
+    public Collection<Argument<?>> shapeVariables() {
         return List.of();
     }
 
@@ -47,8 +48,8 @@ public class CubicShape implements ToolShapeMode {
     }
 
     @Override
-    public void onRightClick(Player player, Pos pos, PlayerSession session) {
-        ToolShapeSessionData data = session.read(ToolShapeSessionData.class, ToolShapeSessionData.DEFAULT);
+    public void onRightClick(@NotNull Player player, Pos pos, @NotNull PlayerSession session) {
+        ToolShapeData data = session.read(ToolShapeData.class, ToolShapeData::defaultFunc);
         MutableNBTCompound nbt = data.params().toMutableCompound();
         Tag.Structure("to", Pos.class).write(nbt, pos);
         session.write(data.withParams(nbt));
@@ -56,8 +57,8 @@ public class CubicShape implements ToolShapeMode {
     }
 
     @Override
-    public void onLeftClick(Player player, Pos pos, PlayerSession session) {
-        ToolShapeSessionData data = session.read(ToolShapeSessionData.class, ToolShapeSessionData.DEFAULT);
+    public void onLeftClick(@NotNull Player player, Pos pos, @NotNull PlayerSession session) {
+        ToolShapeData data = session.read(ToolShapeData.class, ToolShapeData::defaultFunc);
         MutableNBTCompound nbt = data.params().toMutableCompound();
         Tag.Structure("from", Pos.class).write(nbt, pos);
         session.write(data.withParams(nbt));

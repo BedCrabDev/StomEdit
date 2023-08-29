@@ -12,7 +12,7 @@ import dev.bedcrab.stomedit.StomEditException;
 import dev.bedcrab.stomedit.blocktool.BlockTool;
 import dev.bedcrab.stomedit.commands.SECommand;
 import dev.bedcrab.stomedit.session.PlayerSession;
-import dev.bedcrab.stomedit.session.impl.ToolShapeSessionData;
+import dev.bedcrab.stomedit.session.impl.ToolShapeData;
 import dev.bedcrab.stomedit.toolshapes.ToolShape;
 import dev.bedcrab.stomedit.toolshapes.impl.CubicShape;
 import net.kyori.adventure.text.Component;
@@ -43,9 +43,8 @@ public class RegionCommand extends SECommand {
         addSubcommand(new MembersCommand());
         addSubcommand(new InspectCommand());
     }
-
     private static CubicShape.ShapeIterator validateToolshape(PlayerSession session) {
-        ToolShapeSessionData data = session.read(ToolShapeSessionData.class, ToolShapeSessionData.DEFAULT);
+        ToolShapeData data = session.read(ToolShapeData.class, ToolShapeData::defaultFunc);
         if (data.parseMode() != ToolShape.Mode.CUBIC) throw new RuntimeException("InstanceGuard requires a cubic selection!");
         return (CubicShape.ShapeIterator) data.parseIter();
     }
@@ -60,22 +59,20 @@ public class RegionCommand extends SECommand {
 
     class DefineCommand extends SECommand {
         private final ArgumentString nameArg = ArgumentType.String("name");
-        private final ArgumentLoop<EntityFinder> ownersArg = (ArgumentLoop<EntityFinder>) ArgumentType.Loop("owners",
-            ArgumentType.Entity("player").onlyPlayers(true)
-        ).setDefaultValue(List.of());
+        private final ArgumentLoop<EntityFinder> ownersArg = ArgumentType.Loop("owners", ArgumentType.Entity("player").onlyPlayers(true));
         public DefineCommand() {
             super("define", true);
             new Syntax(BlockTool.Mode.SELECT, (player, context, session) -> {
                 CubicShape.ShapeIterator iterator = validateToolshape(session);
                 RegionManager manager = igProvider.getInstanceGuard().getRegionManager();
                 String name = context.get(nameArg);
+                if (manager.getRegion(name, player.getInstance()) != null) throw new RuntimeException("Already exists!");
                 List<UUID> owners = context.get(ownersArg).stream().map(f -> {
                     Player owner = f.findFirstPlayer(player);
                     if (owner == null) throw new RuntimeException("Player not found!");
                     return owner.getUuid();
                 }).toList();
                 if (!owners.contains(player.getUuid())) throw new RuntimeException("Region creator must be an owner!");
-                if (manager.getRegion(name, player.getInstance()) != null) throw new RuntimeException("Already exists!");
                 Region region = new Region(name, player.getInstance(), iterator.minPos, iterator.maxPos);
                 region.getOwners().addAll(owners);
                 if (!igProvider.hasLeveledPermissions(player, region, InstanceGuardProvider.Action.CREATE)) throw new RuntimeException("Denied!");

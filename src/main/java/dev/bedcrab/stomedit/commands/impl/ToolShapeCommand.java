@@ -4,7 +4,7 @@ import dev.bedcrab.stomedit.SEColorUtil;
 import dev.bedcrab.stomedit.SEUtils;
 import dev.bedcrab.stomedit.commands.SECommand;
 import dev.bedcrab.stomedit.session.PlayerSession;
-import dev.bedcrab.stomedit.session.impl.ToolShapeSessionData;
+import dev.bedcrab.stomedit.session.impl.ToolShapeData;
 import dev.bedcrab.stomedit.toolshapes.ToolShape;
 import net.minestom.server.command.builder.CommandContext;
 import net.minestom.server.command.builder.arguments.ArgumentGroup;
@@ -18,14 +18,14 @@ import java.util.Map;
 
 public class ToolShapeCommand extends SECommand {
     public ToolShapeCommand() {
-        super("toolshape");
+        super("shape");
         for (Map.Entry<Integer, ArgumentGroup> entry : ToolShape.shapesParameters.entrySet()) {
             new Syntax(null, this::call, ArgumentType.Literal(ToolShape.Mode.values()[entry.getKey()].name().toLowerCase()), entry.getValue());
         }
     }
 
     private void call(Player player, CommandContext context, PlayerSession session) {
-        ToolShapeSessionData data = session.read(ToolShapeSessionData.class, ToolShapeSessionData.DEFAULT);
+        ToolShapeData data = session.read(ToolShapeData.class, ToolShapeData::defaultFunc);
         ToolShape.Mode newMode = null;
         for (Object v : context.getMap().values()) if (v instanceof String s) {
             try { newMode = ToolShape.Mode.valueOf(s.toUpperCase()); } catch (Exception ignored) {}

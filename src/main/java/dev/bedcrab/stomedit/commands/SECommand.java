@@ -31,6 +31,7 @@ public abstract class SECommand extends Command {
         super(!isSub ? "/"+name : name);
         this.isSub = isSub;
         if (!isSub) setDefaultExecutor((sender, context) -> {
+            sender.sendMessage(context.getMap().toString());
             SEUtils.message(sender, SEColorUtil.FAIL.format("Invalid syntax for %%. Valid syntax:", "/"+context.getCommandName()));
             for (CommandSyntax syntax : getSyntaxes()) SEUtils.message(sender, SEUtils.commandToComp("/"+context.getCommandName(), syntax));
         });
@@ -78,7 +79,7 @@ public abstract class SECommand extends Command {
 
     @FunctionalInterface
     public interface Executor {
-        void accept(Player player, CommandContext context, PlayerSession session) throws Exception;
+        void accept(Player player, CommandContext context, @NotNull PlayerSession session) throws Exception;
     }
 
     public static class Manager {
@@ -87,12 +88,12 @@ public abstract class SECommand extends Command {
             this.igProvider = igProvider;
         }
 
-        public void enable(CommandManager manager) {
+        public void enable(@NotNull CommandManager manager) {
             manager.register(new DebugCommand(igProvider));
             manager.register(new BlocktoolCommand());
             manager.register(new BLToolModeCommand());
             manager.register(new ToolShapeCommand());
-            manager.register(new RegionCommand(igProvider));
+            if (igProvider != null) manager.register(new RegionCommand(igProvider));
             manager.register(new SetCommand());
         }
     }

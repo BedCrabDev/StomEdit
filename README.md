@@ -7,9 +7,9 @@ StomEdit is a FAWE-like implementation of WorldEdit inside of Minestom.
 Add the project as a dependency:
 
 ```gradle
-// for the examples below, relace TAG with a tag from
+// for the examples below, replace TAG with a tag from
 // https://jitpack.io/#BedCrabDev/StomEdit
-// or, use -SNAPSHOT for the latest builds
+// or, use -SNAPSHOT for the latest builds.
 
 // Minestom
 implementation("com.github.BedCrabDev:StomEdit:TAG") {
@@ -22,18 +22,19 @@ implementation("com.github.BedCrabDev:StomEdit:TAG")
 
 (make sure you have also added `jitpack.io` as a repo)
 
-Then, insert the code above after `MinestomServer.init();` and before starting the server:
+How to use (insert in server initialization code):
 
 ```java
-EventNode<Event> parentEventNode = ...; // you can use the global event node here if you want
-StomEdit stomEdit = new StomEdit();
+EventNode<Event> rootNode = ...; // you can use the global event node here if you want 
+CommandManager commandManager = MinecraftServer.getCommandManager();
+StomEdit stomEdit = new StomEdit(null);
 
 // enable everything
-stomEdit.enable();
+stomEdit.enable(rootNode, commandManager);
 
 // or
 stomEdit.bltoolEnable();
-stomEdit.commandsEnable();
+stomEdit.commandsEnable(commandManager);
 ```
 
 StomEdit is not available as an extension.
@@ -43,10 +44,10 @@ StomEdit is not available as an extension.
 **Block Tool**  
 `//bltool`: Obtain the block tool.  
 `//bltoolmode <mode>`: Set the mode of the block tool. Available modes are: BRUSH, MODIFY, SELECT
+`//toolshape <shape>`: Changes the shape of the selection and brush.
 
 **Block Manipulation**  
 `//set`: Fills the selected region with a block.  
-`//toolshape <shape>`: Changes the shape of the selection and brush.
 
 **Other**  
 `//debug`: Is this supposed to be in production?

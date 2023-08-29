@@ -12,6 +12,7 @@ import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.tag.TagReadable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,7 +34,7 @@ public class ToolShape {
         private ToolShapeMode modeHandler;
         Mode(ToolShapeMode modeHandler) {
             overrideHandler(modeHandler);
-            Collection<Argument<?>> parameters = modifiableParameters();
+            Collection<Argument<?>> parameters = shapeVariables();
             shapesParameters.put(this.ordinal(),
                 parameters.size() == 0 ? null : (ArgumentGroup) new ArgumentGroup("parameters", parameters.toArray(new Argument<?>[0])).setDefaultValue(new CommandContext(""))
             );
@@ -44,8 +45,8 @@ public class ToolShape {
         }
 
         @Override
-        public Collection<Argument<?>> modifiableParameters() {
-            return modeHandler.modifiableParameters();
+        public Collection<Argument<?>> shapeVariables() {
+            return modeHandler.shapeVariables();
         }
 
         @Override
@@ -64,12 +65,12 @@ public class ToolShape {
         }
 
         @Override
-        public void onRightClick(Player player, Pos pos, PlayerSession session) {
+        public void onRightClick(@NotNull Player player, Pos pos, @NotNull PlayerSession session) {
             modeHandler.onRightClick(player, pos, session);
         }
 
         @Override
-        public void onLeftClick(Player player, Pos pos, PlayerSession session) {
+        public void onLeftClick(@NotNull Player player, Pos pos, @NotNull PlayerSession session) {
             modeHandler.onLeftClick(player, pos, session);
         }
     }
