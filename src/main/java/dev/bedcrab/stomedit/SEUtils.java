@@ -7,11 +7,13 @@ import net.minestom.server.command.builder.CommandContext;
 import net.minestom.server.command.builder.CommandSyntax;
 import net.minestom.server.command.builder.arguments.*;
 import net.minestom.server.coordinate.Point;
+import net.minestom.server.coordinate.Pos;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.tag.TagReadable;
 import net.minestom.server.tag.TagSerializer;
 import net.minestom.server.tag.TagWritable;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jglrxavpok.hephaistos.nbt.NBT;
@@ -24,10 +26,14 @@ import java.util.Set;
 
 @SuppressWarnings("UnstableApiUsage")
 public class SEUtils {
-    public static void message(CommandSender sender, Component text) {
+    public static void message(@NotNull CommandSender sender, Component text) {
         sender.sendMessage(SEColorUtil.SPECIAL.text("[StomEdit]").appendSpace().append(text));
     }
-    public static Hashtable<String, Set<String>> getAllDefaultProperties(Block block) {
+    @Contract(pure = true)
+    public static @NotNull String plural(int num, String one, String multi) {
+        return num != 1 ? " "+multi : " "+one;
+    }
+    public static @NotNull Hashtable<String, Set<String>> getAllDefaultProperties(@NotNull Block block) {
         final Hashtable<String, Set<String>> blockProperties = new Hashtable<>();
         for (Block possibleState : block.possibleStates()) {
             for (Map.Entry<String, String> entry : possibleState.properties().entrySet()) {
@@ -37,10 +43,7 @@ public class SEUtils {
         }
         return blockProperties;
     }
-    public static Component pointToComp(Point point) {
-        return SEColorUtil.GENERIC.text("["+point.blockX() +", "+point.blockY() +", "+point.blockZ()+"]");
-    }
-    public static Component commandToComp(String name, CommandSyntax syntax) {
+    public static @NotNull Component commandToComp(String name, @NotNull CommandSyntax syntax) {
         TextComponent.Builder text = Component.text();
         text.append(SEColorUtil.GENERIC.text(name));
         for (Argument<?> arg : syntax.getArguments()) {
@@ -62,12 +65,10 @@ public class SEUtils {
         }
         return text.build();
     }
-
-    public static NBTCompound emptyCompound() {
+    @Contract(pure = true)
+    public static @NotNull NBTCompound emptyCompound() {
         return NBT.Compound(b -> b.set("_", NBT.Byte(Byte.MAX_VALUE)));
     }
-
-    //TODO: use this for modifiable parameters
     public static class ArgumentsToTagSerializer implements TagSerializer<CommandContext> {
         @Nullable
         @Override
@@ -83,6 +84,32 @@ public class SEUtils {
                 else if (val instanceof Integer) writer.setTag(Tag.Integer(id), (int) val);
                 else if (val instanceof Boolean) writer.setTag(Tag.Boolean(id), (boolean) val);
             }
+        }
+    }
+    public record BlockPos(int x, int y, int z) {
+        public BlockPos(@NotNull Point p) {
+            this(p.blockX(), p.blockY(), p.blockZ());
+        }
+        @Contract(value = " -> new", pure = true)
+        public @NotNull Pos pos() {
+            return new Pos(x, y, z);
+        }
+        @Contract("_ -> new")
+        public @NotNull BlockPos withX(int x) {
+            return new BlockPos(x, y, z);
+        }
+        @Contract("_ -> new")
+        public @NotNull BlockPos withY(int y) {
+            return new BlockPos(x, y, z);
+        }
+        @Contract("_ -> new")
+        public @NotNull BlockPos withZ(int z) {
+            return new BlockPos(x, y, z);
+        }
+        @Contract(pure = true)
+        @Override
+        public @NotNull String toString() {
+            return "["+x+", "+y+", "+z+"]";
         }
     }
 }

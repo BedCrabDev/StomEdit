@@ -15,7 +15,6 @@ import dev.bedcrab.stomedit.session.PlayerSession;
 import dev.bedcrab.stomedit.session.impl.ToolShapeData;
 import dev.bedcrab.stomedit.toolshapes.ToolShape;
 import dev.bedcrab.stomedit.toolshapes.impl.CubicShape;
-import net.kyori.adventure.text.Component;
 import net.minestom.server.command.builder.CommandContext;
 import net.minestom.server.command.builder.arguments.ArgumentGroup;
 import net.minestom.server.command.builder.arguments.ArgumentLoop;
@@ -73,15 +72,15 @@ public class RegionCommand extends SECommand {
                     return owner.getUuid();
                 }).toList();
                 if (!owners.contains(player.getUuid())) throw new RuntimeException("Region creator must be an owner!");
-                Region region = new Region(name, player.getInstance(), iterator.minPos, iterator.maxPos);
+                Region region = new Region(name, player.getInstance(), iterator.minPos.pos(), iterator.maxPos.pos());
                 region.getOwners().addAll(owners);
                 if (!igProvider.hasLeveledPermissions(player, region, InstanceGuardProvider.Action.CREATE)) throw new RuntimeException("Denied!");
                 manager.getRegions().add(region);
                 SEUtils.message(player, SEColorUtil.GENERIC.format(
                     "Created region `%%` (%% - %%)",
-                    Component.text(region.getName()),
-                    SEUtils.pointToComp(region.getMinLocation()),
-                    SEUtils.pointToComp(region.getMaxLocation())
+                    region.getName(),
+                    new SEUtils.BlockPos(region.getMinLocation()).toString(),
+                    new SEUtils.BlockPos(region.getMaxLocation()).toString()
                 ));
             }, nameArg, ownersArg);
         }
@@ -107,18 +106,18 @@ public class RegionCommand extends SECommand {
             super("list", true);
             new Syntax(null, (player, context, session) -> {
                 List<Region> regions = igProvider.getInstanceGuard().getRegionManager().getRegions().stream().filter(r -> r.getInstance() == player.getInstance()).toList();
-                boolean plural = regions.size() != 1;
+                int size = regions.size();
                 SEUtils.message(player, SEColorUtil.GENERIC.format(
-                    "There "+(plural ? "are" : "is")+" %% "+"region"+(plural ? "s" : ""),
-                    String.valueOf(regions.size())
+                    "There "+SEUtils.plural(size, "is", "are")+" %% "+SEUtils.plural(size, "region", "regions"),
+                    String.valueOf(size)
                 ));
                 for (Region region : regions) {
                     if (!igProvider.hasLeveledPermissions(player, region, InstanceGuardProvider.Action.INSPECT)) continue;
                     SEUtils.message(player, SEColorUtil.GENERIC.format(
                         " - `%%` from: %% to: %%",
-                        Component.text(region.getName()),
-                        SEUtils.pointToComp(region.getMinLocation()),
-                        SEUtils.pointToComp(region.getMaxLocation())
+                        region.getName(),
+                        new SEUtils.BlockPos(region.getMinLocation()).toString(),
+                        new SEUtils.BlockPos(region.getMaxLocation()).toString()
                     ));
                 }
             });
@@ -189,8 +188,8 @@ public class RegionCommand extends SECommand {
         private final ArgumentString regionArg = ArgumentType.String("region");
         private void bounds(Player player, Region region) {
             SEUtils.message(player, SEColorUtil.GENERIC.text("Bounds:"));
-            SEUtils.message(player, SEColorUtil.GENERIC.format(" > from: %%", SEUtils.pointToComp(region.getMinLocation())));
-            SEUtils.message(player, SEColorUtil.GENERIC.format(" > to: %%", SEUtils.pointToComp(region.getMaxLocation())));
+            SEUtils.message(player, SEColorUtil.GENERIC.format(" > from: %%", new SEUtils.BlockPos(region.getMinLocation()).toString()));
+            SEUtils.message(player, SEColorUtil.GENERIC.format(" > to: %%", new SEUtils.BlockPos(region.getMaxLocation()).toString()));
         }
         private void owners(Player player, Region region) {
             SEUtils.message(player, SEColorUtil.GENERIC.text("Owners"));

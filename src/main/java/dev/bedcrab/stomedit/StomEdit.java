@@ -2,6 +2,8 @@ package dev.bedcrab.stomedit;
 
 import dev.bedcrab.stomedit.blocktool.BlockTool;
 import dev.bedcrab.stomedit.commands.SECommand;
+import dev.bedcrab.stomedit.executor.JobWorker;
+import dev.bedcrab.stomedit.executor.JobWorkerImpl;
 import dev.bedcrab.stomedit.session.PlayerSession;
 import dev.bedcrab.stomedit.session.PlayerSessionImpl;
 import dev.bedcrab.stomedit.toolshapes.ToolShape;
@@ -22,20 +24,23 @@ import java.util.function.Function;
 @SuppressWarnings({"UnstableApiUsage", "NonExtendableApiUsage"})
 public final class StomEdit implements EventHandler<PlayerEvent> {
     public final static Tag<NBT> NBT_DATA_HOME = Tag.NBT("stomedit");
-    public static Function<Player, PlayerSession> sessionGetter = PlayerSessionImpl::new;
+    public static Function<Player, @NotNull PlayerSession> sessionGetter = PlayerSessionImpl::new;
     public InstanceGuardProvider igProvider;
     public BlockTool bltool;
     public ToolShape toolShape;
     public SECommand.Manager commands;
     private final EventNode<PlayerEvent> seNode;
     private final EventNode<Event> igNode;
-    public StomEdit(@Nullable InstanceGuardProvider igProvider) {
+    public StomEdit(JobWorker worker, @Nullable InstanceGuardProvider igProvider) {
         this.igProvider = igProvider;
         bltool = new BlockTool();
         toolShape = new ToolShape();
-        commands = new SECommand.Manager(igProvider);
+        commands = new SECommand.Manager(worker, igProvider);
         seNode = eventNode();
         igNode = igProvider != null ? EventNode.all("instanceguard") : null;
+    }
+    public StomEdit(@Nullable InstanceGuardProvider igProvider) {
+        this(new JobWorkerImpl(), igProvider);
     }
     public void enable(@NotNull EventNode<Event> rootNode, @NotNull CommandManager manager) {
         if (igProvider != null) igProvider.getInstanceGuard().enable(igNode);

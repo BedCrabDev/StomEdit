@@ -9,7 +9,6 @@ import dev.bedcrab.stomedit.session.PlayerSession;
 import dev.bedcrab.stomedit.session.impl.BLToolData;
 import dev.bedcrab.stomedit.session.impl.ToolShapeData;
 import net.minestom.server.coordinate.Point;
-import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
 import net.minestom.server.instance.block.Block;
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +18,7 @@ public class SelectMode implements BlockToolMode {
     public void onUse(Block block, Point pos, Player player, @NotNull PlayerSession session) throws StomEditException {
         ToolShapeData data = session.read(ToolShapeData.class, ToolShapeData::defaultFunc);
         try {
-            data.parseMode().onRightClick(player, new Pos(pos), session);
+            data.parseMode().onRightClick(player, new SEUtils.BlockPos(pos), session);
         } catch (Exception e) {
             throw new StomEditException(player, "An error occurred whilst handling toolshape nbt!", e);
         }
@@ -29,7 +28,7 @@ public class SelectMode implements BlockToolMode {
     public void onLeftClick(Block block, Point pos, Player player, @NotNull PlayerSession session) throws StomEditException {
         ToolShapeData toolshapeData = session.read(ToolShapeData.class, ToolShapeData::defaultFunc);
         try {
-            toolshapeData.parseMode().onLeftClick(player, new Pos(pos), session);
+            toolshapeData.parseMode().onLeftClick(player, new SEUtils.BlockPos(pos), session);
         } catch (Exception e) {
             throw new StomEditException(player, "An error occurred whilst handling toolshape nbt!", e);
         }

@@ -8,7 +8,6 @@ import dev.bedcrab.stomedit.toolshapes.ToolShapeIterator;
 import dev.bedcrab.stomedit.toolshapes.ToolShapeMode;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.command.builder.arguments.Argument;
-import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.tag.TagReadable;
@@ -29,16 +28,16 @@ public class CubicShape implements ToolShapeMode {
     @Override
     public Collection<Tag<?>> getRequiredParams() {
         return List.of(
-            Tag.Structure("from", Pos.class),
-            Tag.Structure("to", Pos.class)
+            Tag.Structure("from", SEUtils.BlockPos.class),
+            Tag.Structure("to", SEUtils.BlockPos.class)
         );
     }
 
     @Override
     public ToolShapeIterator iter(TagReadable params) {
         return new ShapeIterator(
-            params.getTag(Tag.Structure("from", Pos.class)),
-            params.getTag(Tag.Structure("to", Pos.class))
+            params.getTag(Tag.Structure("from", SEUtils.BlockPos.class)),
+            params.getTag(Tag.Structure("to", SEUtils.BlockPos.class))
         );
     }
 
@@ -48,50 +47,50 @@ public class CubicShape implements ToolShapeMode {
     }
 
     @Override
-    public void onRightClick(@NotNull Player player, Pos pos, @NotNull PlayerSession session) {
+    public void onRightClick(@NotNull Player player, SEUtils.BlockPos bPos, @NotNull PlayerSession session) {
         ToolShapeData data = session.read(ToolShapeData.class, ToolShapeData::defaultFunc);
         MutableNBTCompound nbt = data.params().toMutableCompound();
-        Tag.Structure("to", Pos.class).write(nbt, pos);
+        Tag.Structure("to", SEUtils.BlockPos.class).write(nbt, bPos);
         session.write(data.withParams(nbt));
-        SEUtils.message(player, SEColorUtil.GENERIC.format("%% target set to %%", Component.text("TO"), SEUtils.pointToComp(pos)));
+        SEUtils.message(player, SEColorUtil.GENERIC.format("%% target set to %%", "TO", bPos.toString()));
     }
 
     @Override
-    public void onLeftClick(@NotNull Player player, Pos pos, @NotNull PlayerSession session) {
+    public void onLeftClick(@NotNull Player player, SEUtils.BlockPos bPos, @NotNull PlayerSession session) {
         ToolShapeData data = session.read(ToolShapeData.class, ToolShapeData::defaultFunc);
         MutableNBTCompound nbt = data.params().toMutableCompound();
-        Tag.Structure("from", Pos.class).write(nbt, pos);
+        Tag.Structure("from", SEUtils.BlockPos.class).write(nbt, bPos);
         session.write(data.withParams(nbt));
-        SEUtils.message(player, SEColorUtil.GENERIC.format("%% target set to %%", Component.text("FROM"), SEUtils.pointToComp(pos)));
+        SEUtils.message(player, SEColorUtil.GENERIC.format("%% target set to %%", "FROM", bPos.toString()));
     }
 
     public static class ShapeIterator implements ToolShapeIterator {
         private final int minX, maxX, minY, maxY, minZ, maxZ;
-        public final Pos minPos, maxPos;
-        private Pos lastPos;
+        public final SEUtils.BlockPos minPos, maxPos;
+        private SEUtils.BlockPos lastPos;
         private boolean last = false;
         private int count = 0;
-        public ShapeIterator(Pos from, Pos to) {
-            minX = Math.min(to.blockX(), from.blockX()); maxX = Math.max(to.blockX(), from.blockX());
-            minY = Math.min(to.blockY(), from.blockY()); maxY = Math.max(to.blockY(), from.blockY());
-            minZ = Math.min(to.blockZ(), from.blockZ()); maxZ = Math.max(to.blockZ(), from.blockZ());
-            minPos = new Pos(minX, minY, minZ);
-            maxPos = new Pos(maxX, maxY, maxZ);
+        public ShapeIterator(SEUtils.BlockPos from, SEUtils.BlockPos to) {
+            minX = Math.min(to.x(), from.x()); maxX = Math.max(to.x(), from.x());
+            minY = Math.min(to.y(), from.y()); maxY = Math.max(to.y(), from.y());
+            minZ = Math.min(to.z(), from.z()); maxZ = Math.max(to.z(), from.z());
+            minPos = new SEUtils.BlockPos(minX, minY, minZ);
+            maxPos = new SEUtils.BlockPos(maxX, maxY, maxZ);
             lastPos = minPos;
         }
 
         @Override
         public boolean hasNext() {
             if (last) return false;
-            last = lastPos.sameBlock(maxX, maxY, maxZ);
+            last = lastPos.pos().sameBlock(maxX, maxY, maxZ);
             return true;
         }
 
         @Override
-        public @Nullable Pos next() {
+        public @Nullable SEUtils.BlockPos next() {
             count++;
 
-            Pos oldPos = lastPos;
+            SEUtils.BlockPos oldPos = lastPos;
             if (lastPos.x() < maxX) {
                 lastPos = lastPos.withX(lastPos.x() + 1);
                 return oldPos;

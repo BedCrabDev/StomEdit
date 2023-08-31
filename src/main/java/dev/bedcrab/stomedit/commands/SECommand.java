@@ -6,6 +6,7 @@ import dev.bedcrab.stomedit.SEUtils;
 import dev.bedcrab.stomedit.StomEditException;
 import dev.bedcrab.stomedit.blocktool.BlockTool;
 import dev.bedcrab.stomedit.commands.impl.*;
+import dev.bedcrab.stomedit.executor.JobWorker;
 import dev.bedcrab.stomedit.session.PlayerSession;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.command.CommandManager;
@@ -24,11 +25,19 @@ import java.util.Objects;
 
 public abstract class SECommand extends Command {
     public final boolean isSub;
+    public final @Nullable JobWorker worker;
     public SECommand(@NotNull String name) {
-        this(name, false);
+        this(null, name, false);
     }
     public SECommand(String name, boolean isSub) {
+        this(null, name, isSub);
+    }
+    public SECommand(@Nullable JobWorker worker, @NotNull String name) {
+        this(worker, name, false);
+    }
+    public SECommand(@Nullable JobWorker worker, String name, boolean isSub) {
         super(!isSub ? "/"+name : name);
+        this.worker = worker;
         this.isSub = isSub;
         if (!isSub) setDefaultExecutor((sender, context) -> {
             sender.sendMessage(context.getMap().toString());
@@ -84,7 +93,9 @@ public abstract class SECommand extends Command {
 
     public static class Manager {
         private final InstanceGuardProvider igProvider;
-        public Manager(InstanceGuardProvider igProvider) {
+        private final JobWorker worker;
+        public Manager(JobWorker worker, InstanceGuardProvider igProvider) {
+            this.worker = worker;
             this.igProvider = igProvider;
         }
 
@@ -94,7 +105,7 @@ public abstract class SECommand extends Command {
             manager.register(new BLToolModeCommand());
             manager.register(new ToolShapeCommand());
             if (igProvider != null) manager.register(new RegionCommand(igProvider));
-            manager.register(new SetCommand());
+            manager.register(new SetCommand(worker));
         }
     }
 }

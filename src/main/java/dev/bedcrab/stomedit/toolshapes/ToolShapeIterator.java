@@ -1,20 +1,14 @@
 package dev.bedcrab.stomedit.toolshapes;
 
-import net.minestom.server.coordinate.Pos;
-import net.minestom.server.instance.block.Block;
+import dev.bedcrab.stomedit.SEUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
-import java.util.function.Supplier;
 
-public interface ToolShapeIterator extends Iterable<Pos>, Iterator<Pos> {
+public interface ToolShapeIterator extends Iterable<SEUtils.BlockPos>, Iterator<SEUtils.BlockPos> {
     int count();
-    @NotNull
     @Override
-    default Iterator<Pos> iterator() {
+    default @NotNull Iterator<SEUtils.BlockPos> iterator() {
         return this;
-    }
-    default void fill(Block.@NotNull Setter setter, @NotNull Supplier<Block> supplier) {
-        for (Pos pos : this) setter.setBlock(pos, supplier.get());
     }
 }

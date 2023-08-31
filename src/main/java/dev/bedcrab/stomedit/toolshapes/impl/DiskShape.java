@@ -9,7 +9,6 @@ import dev.bedcrab.stomedit.toolshapes.ToolShapeMode;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.command.builder.arguments.Argument;
 import net.minestom.server.command.builder.arguments.ArgumentType;
-import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.tag.TagReadable;
@@ -32,7 +31,7 @@ public class DiskShape implements ToolShapeMode {
     @Override
     public Collection<Tag<?>> getRequiredParams() {
         return List.of(
-            Tag.Structure("origin", Pos.class),
+            Tag.Structure("origin", SEUtils.BlockPos.class),
             Tag.Integer("radius"),
             Tag.Boolean("vertical")
         );
@@ -41,7 +40,7 @@ public class DiskShape implements ToolShapeMode {
     @Override
     public ToolShapeIterator iter(TagReadable params) {
         return new ShapeIterator(
-            params.getTag(Tag.Structure("origin", Pos.class)),
+            params.getTag(Tag.Structure("origin", SEUtils.BlockPos.class)),
             params.getTag(Tag.Integer("radius")),
             params.getTag(Tag.Boolean("vertical"))
         );
@@ -53,7 +52,7 @@ public class DiskShape implements ToolShapeMode {
     }
 
     @Override
-    public void onRightClick(@NotNull Player player, Pos pos, @NotNull PlayerSession session) {
+    public void onRightClick(@NotNull Player player, SEUtils.BlockPos bPos, @NotNull PlayerSession session) {
         ToolShapeData data = session.read(ToolShapeData.class, ToolShapeData::defaultFunc);
         MutableNBTCompound nbt = data.params().toMutableCompound();
 
@@ -61,9 +60,9 @@ public class DiskShape implements ToolShapeMode {
             SEUtils.message(player, SEColorUtil.FAIL.format("Set %% first, or use //toolshape DISK <radius> to set the radius!", "ORIGIN (lclick)"));
             return;
         }
-        Pos origin = Objects.requireNonNull(Tag.Structure("origin", Pos.class).read(nbt));
-        int radius = (int) origin.distance(pos);
-        boolean vertical = origin.blockX() == pos.blockX() && origin.blockZ() == pos.blockZ() && Math.max(origin.blockY(), pos.blockY()) - Math.min(origin.blockY(), pos.blockY()) > 1;
+        SEUtils.BlockPos origin = Objects.requireNonNull(Tag.Structure("origin", SEUtils.BlockPos.class).read(nbt));
+        int radius = (int) origin.pos().distance(bPos.pos());
+        boolean vertical = origin.x() == bPos.x() && origin.z() == bPos.z() && Math.max(origin.y(), bPos.y()) - Math.min(origin.y(), bPos.y()) > 1;
         Tag.Integer("radius").write(nbt, radius);
         Tag.Boolean("vertical").write(nbt, vertical);
 
@@ -72,29 +71,29 @@ public class DiskShape implements ToolShapeMode {
     }
 
     @Override
-    public void onLeftClick(@NotNull Player player, Pos pos, @NotNull PlayerSession session) {
+    public void onLeftClick(@NotNull Player player, SEUtils.BlockPos bPos, @NotNull PlayerSession session) {
         ToolShapeData data = session.read(ToolShapeData.class, ToolShapeData::defaultFunc);
         MutableNBTCompound nbt = data.params().toMutableCompound();
-        Tag.Structure("origin", Pos.class).write(nbt, pos);
+        Tag.Structure("origin", SEUtils.BlockPos.class).write(nbt, bPos);
         session.write(data.withParams(nbt));
-        SEUtils.message(player, SEColorUtil.GENERIC.format("%% target set to %%", Component.text("ORIGIN"), SEUtils.pointToComp(pos)));
+        SEUtils.message(player, SEColorUtil.GENERIC.format("%% target set to %%", "ORIGIN", bPos.toString()));
     }
 
     //TODO: turn into actual iterator
     public static class ShapeIterator implements ToolShapeIterator {
         private int count;
-        private final Iterator<Pos> posIterator;
+        private final Iterator<SEUtils.BlockPos> posIterator;
 
-        public ShapeIterator(Pos origin, int r, boolean vertical) {
-            ArrayList<Pos> list = new ArrayList<>();
+        public ShapeIterator(SEUtils.BlockPos origin, int r, boolean vertical) {
+            ArrayList<SEUtils.BlockPos> list = new ArrayList<>();
 
             // FAWE code vvv
             final int ceilR = (int) (double) r;
             final double invR = 1. / r;
 
-            int px = origin.blockX();
-            int py = origin.blockY();
-            int pz = origin.blockZ();
+            int px = origin.x();
+            int py = origin.y();
+            int pz = origin.z();
 
             double xSqr, zSqr, distanceSq;
             double nextXn = 0, nextZn;
@@ -126,10 +125,10 @@ public class DiskShape implements ToolShapeMode {
                     // x -> south or north
                     // z -> east or west
                     //TODO: add "face" tag
-                    list.add(new Pos(xx, vertical ? zz : py, vertical ? pz : zz));
-                    list.add(new Pos(x_x, vertical ? zz : py, vertical ? pz : zz));
-                    list.add(new Pos(xx, vertical ? z_z : py, vertical ? pz : z_z));
-                    list.add(new Pos(x_x, vertical ? z_z : py, vertical ? pz : z_z));
+                    list.add(new SEUtils.BlockPos(xx, vertical ? zz : py, vertical ? pz : zz));
+                    list.add(new SEUtils.BlockPos(x_x, vertical ? zz : py, vertical ? pz : zz));
+                    list.add(new SEUtils.BlockPos(xx, vertical ? z_z : py, vertical ? pz : z_z));
+                    list.add(new SEUtils.BlockPos(x_x, vertical ? z_z : py, vertical ? pz : z_z));
                 }
             }
             this.posIterator = list.iterator();
@@ -146,7 +145,7 @@ public class DiskShape implements ToolShapeMode {
         }
 
         @Override
-        public Pos next() {
+        public SEUtils.BlockPos next() {
             count++;
             return posIterator.next();
         }

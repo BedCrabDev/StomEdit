@@ -1,6 +1,7 @@
 package dev.bedcrab.stomedit.toolshapes;
 
 import com.extollit.collect.cache.WeakIterable;
+import dev.bedcrab.stomedit.SEUtils;
 import dev.bedcrab.stomedit.session.PlayerSession;
 import dev.bedcrab.stomedit.toolshapes.impl.CubicShape;
 import dev.bedcrab.stomedit.toolshapes.impl.DiskShape;
@@ -8,7 +9,6 @@ import net.kyori.adventure.text.Component;
 import net.minestom.server.command.builder.CommandContext;
 import net.minestom.server.command.builder.arguments.Argument;
 import net.minestom.server.command.builder.arguments.ArgumentGroup;
-import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
 import net.minestom.server.tag.Tag;
 import net.minestom.server.tag.TagReadable;
@@ -65,13 +65,13 @@ public class ToolShape {
         }
 
         @Override
-        public void onRightClick(@NotNull Player player, Pos pos, @NotNull PlayerSession session) {
-            modeHandler.onRightClick(player, pos, session);
+        public void onRightClick(@NotNull Player player, SEUtils.BlockPos bPos, @NotNull PlayerSession session) {
+            modeHandler.onRightClick(player, bPos, session);
         }
 
         @Override
-        public void onLeftClick(@NotNull Player player, Pos pos, @NotNull PlayerSession session) {
-            modeHandler.onLeftClick(player, pos, session);
+        public void onLeftClick(@NotNull Player player, SEUtils.BlockPos bPos, @NotNull PlayerSession session) {
+            modeHandler.onLeftClick(player, bPos, session);
         }
     }
 }
